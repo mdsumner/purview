@@ -41,8 +41,8 @@ plot(range(files$xmin), range(files$ymin), asp = 1)
 ex <-list(x = c(2e+06, 3e+06), y = c(-112489.769462839, -1914345.41768303
 ))
 
-files1 <- files |> filter(xmin >= min(ex$x), xmax <= max(ex$x),
-                 ymin >= min(ex$y), ymax <= max(ex$y))
+files1 <- files |> filter(between(xmin, ex$x[1], ex$x[2]) |  between(xmax, ex$x[1], ex$x[2]) &
+                            between(ymin, ex$y[1], ex$y[2]) |  between(ymax, ex$y[1], ex$y[2]))
 vrt <- character(nrow(files1))
 for (i in seq_along(vrt)) vrt[i] <- vapour::vapour_vrt(files1$fullname[i], extent = c(files1$xmin[i], files1$xmax[i],
                                                                                      files1$ymin[i], files1$ymax[i]),
@@ -50,8 +50,12 @@ for (i in seq_along(vrt)) vrt[i] <- vapour::vapour_vrt(files1$fullname[i], exten
 
 ext <- c(range(unlist(files1[c("xmin", "xmax")])),
          range(unlist(files1[c("ymin", "ymax")])))
-im <- imagery(source = vrt, extent = ext, projection = info1$projection,
-              dimension = c(512, 512) * 2)
+par(mfrow = n2mfrow(22), mar = rep(0, 4))
+for (i in seq_along(vrt)) {
+  im <- imagery(source = vrt[i], extent = ext, projection = info1$projection,
+              dimension = dev.size("px")/4)
 ximage::ximage(im, extent = ext, asp = 1)
+}
+
 m <- do.call(cbind, maps::map(plot = F)[1:2])
 lines(reproj::reproj_xy(m, info1$projection), lwd = 1, col = "yellow")
